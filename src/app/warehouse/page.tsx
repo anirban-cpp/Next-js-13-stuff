@@ -1,10 +1,11 @@
 import React from 'react'
 import { Product } from '../../../typings'
-import { revalidateTag } from 'next/cache'
+import { addProductToDB } from '../../actions/serverActions'
+import AddProductButton from '@/components/AddProductButton'
 
 const fetchProducts = async () => {
   try {
-    const data = await fetch('https://64f1192c0e1e60602d239a56.mockapi.io/products', { 
+    const data = await fetch('https://64f1192c0e1e60602d239a56.mockapi.io/products', {
       cache: 'no-cache',
       next: {
         tags: ["products"]
@@ -17,40 +18,12 @@ const fetchProducts = async () => {
   }
 }
 
-const addProductToDB = async (e: FormData) => {
-  "use server"  // this directive allows this function to be used as a server action
-  const product = e.get('product')?.toString()
-  const price = e.get('price')?.toString()
-
-  if (!product || !price) return
-
-  const newProduct: Product = {
-    product,
-    price
-  }
-  try {
-    await fetch('https://64f1192c0e1e60602d239a56.mockapi.io/products', {
-      method: 'POST',
-      body: JSON.stringify(newProduct),
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    })
-
-    revalidateTag('products') // this allows the endpoint with this tag to be re-fetched
-  } catch (err) {
-
-  } finally {
-    e.set("product",'')
-    e.set("price",'')
-  }
-}
-
 const WareHouse = async () => {
   const productsData = await fetchProducts()
   return (
     <main className='m-5'>
       <div className='text-3xl font-bold text-center'>Products WareHouse</div>
+      <AddProductButton />
       <form action={addProductToDB} className='flex flex-col gap-5 mx-auto p-5 max-w-xl'>
         <input
           type='text'
